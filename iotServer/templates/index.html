@@ -1,0 +1,9 @@
+{{define "content"}}
+<h1>I-rise control room monitoring</h1>
+<div id="devices-container"
+     hx-get="/devices"
+     hx-trigger="load, every 30s"
+     hx-swap="innerHTML">
+    <p>Loading devices...</p>
+</div>
+{{end}}

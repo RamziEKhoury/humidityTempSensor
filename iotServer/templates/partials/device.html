@@ -1,0 +1,63 @@
+<div class="device-detail">
+    <a href="#" class="back-link" hx-get="/devices" hx-target="#devices-container" hx-swap="innerHTML">&larr; Back to devices</a>
+
+    <h2>{{.Device.ID}}</h2>
+    <p class="device-location">{{.Device.Location}}</p>
+    <div class="last-seen">
+        Status: {{if .Device.IsOnline}}<strong>Online</strong>{{else}}<strong>Offline</strong>{{end}}
+        &mdash; Last seen: {{.Device.LastSeenFormatted}}
+    </div>
+
+    <div class="latest-values">
+        <div class="latest-value-box">
+            <div class="latest-value-label">Temperature</div>
+            <div class="latest-value-number">{{if .Device.LastTemp}}{{printf "%.1f" .Device.LastTemp}}°C{{else}}&mdash;{{end}}</div>
+        </div>
+        <div class="latest-value-box">
+            <div class="latest-value-label">Humidity</div>
+            <div class="latest-value-number">{{if .Device.LastHumid}}{{printf "%.1f" .Device.LastHumid}}%{{else}}&mdash;{{end}}</div>
+        </div>
+    </div>
+
+    {{if .TempChart.Points}}
+    <div class="chart-container">
+        <div class="chart-title">Temperature (last 24 readings)</div>
+        <svg class="chart" viewBox="0 0 400 120" preserveAspectRatio="none">
+            <path class="chart-area" d="{{.TempChart.AreaPath}}"/>
+            <path class="chart-line" d="{{.TempChart.LinePath}}"/>
+            {{range .TempChart.Points}}
+            <circle class="chart-dot" cx="{{.X}}" cy="{{.Y}}" r="3">
+                <title>{{printf "%.1f" .Value}}°C at {{.TimeFormatted}}</title>
+            </circle>
+            {{end}}
+        </svg>
+        <div class="chart-labels">
+            <span>{{printf "%.1f" .TempChart.Min}}°C</span>
+            <span>{{printf "%.1f" .TempChart.Max}}°C</span>
+        </div>
+    </div>
+    {{else}}
+    <div class="no-data">No temperature data available</div>
+    {{end}}
+
+    {{if .HumidChart.Points}}
+    <div class="chart-container">
+        <div class="chart-title">Humidity (last 24 readings)</div>
+        <svg class="chart" viewBox="0 0 400 120" preserveAspectRatio="none">
+            <path class="chart-area" d="{{.HumidChart.AreaPath}}"/>
+            <path class="chart-line" d="{{.HumidChart.LinePath}}"/>
+            {{range .HumidChart.Points}}
+            <circle class="chart-dot" cx="{{.X}}" cy="{{.Y}}" r="3">
+                <title>{{printf "%.1f" .Value}}% at {{.TimeFormatted}}</title>
+            </circle>
+            {{end}}
+        </svg>
+        <div class="chart-labels">
+            <span>{{printf "%.1f" .HumidChart.Min}}%</span>
+            <span>{{printf "%.1f" .HumidChart.Max}}%</span>
+        </div>
+    </div>
+    {{else}}
+    <div class="no-data">No humidity data available</div>
+    {{end}}
+</div>

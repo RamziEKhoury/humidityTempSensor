@@ -1,0 +1,40 @@
+<div class="header-actions">
+    <span>{{if .Devices}}{{len .Devices}} device{{if gt (len .Devices) 1}}s{{end}}{{else}}No devices{{end}}</span>
+    <button class="add-device-btn" hx-get="/device/new" hx-target="#devices-container" hx-swap="innerHTML">+ Add Device</button>
+</div>
+
+{{if .Devices}}
+<div class="device-grid">
+    {{range .Devices}}
+    <div class="card"
+         hx-get="/device/{{.ID}}"
+         hx-target="#devices-container"
+         hx-swap="innerHTML">
+        <div class="card-header">
+            <span class="device-name">{{.ID}}</span>
+            <span class="status-dot {{if .IsOnline}}online{{else}}offline{{end}}"></span>
+        </div>
+        <div class="device-location">{{.Location}}</div>
+        <div class="device-readings">
+            {{if .LastTemp}}
+            <div class="reading">
+                <span class="reading-label">Temperature</span>
+                <span class="reading-value">{{printf "%.1f" .LastTemp}}°C</span>
+            </div>
+            {{end}}
+            {{if .LastHumid}}
+            <div class="reading">
+                <span class="reading-label">Humidity</span>
+                <span class="reading-value">{{printf "%.1f" .LastHumid}}%</span>
+            </div>
+            {{end}}
+        </div>
+        <div class="last-seen">
+            {{if .IsOnline}}Last seen: {{.LastSeenFormatted}}{{else}}Offline since: {{.LastSeenFormatted}}{{end}}
+        </div>
+    </div>
+    {{end}}
+</div>
+{{else}}
+<div class="no-data">No devices found</div>
+{{end}}
