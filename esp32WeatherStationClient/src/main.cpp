@@ -5,11 +5,11 @@
 #include "esp_sleep.h"
 #include "time.h"
 
-#define WIFI_SSID "bye bye"
-#define WIFI_PASSWORD "hello"
+#define WIFI_SSID "XXXXXX"
+#define WIFI_PASSWORD "XXXXXXX"
 
-#define SERVICE_URL "http://example.com/api/data"
-#define DEVICE_ID "esp32-001"
+#define SERVICE_URL "http://192.168.70.9:8000/weatherListener"
+#define DEVICE_ID "test-device-001"
 
 #define DHTPIN 4 // remember to put 10k Ohm pull-up resistor. 
 #define DHTTYPE DHT11
@@ -71,21 +71,33 @@ void sendReading(float temperature, float humidity, String timestamp) {
   }
 
   HTTPClient http;
+
+  // Send temperature (param_id = 1)
   http.begin(SERVICE_URL);
   http.addHeader("Content-Type", "application/json");
   http.addHeader("X-Device-ID", DEVICE_ID);
 
-  String payload = "{\"temperature\":" + String(temperature) +
-                   ",\"humidity\":" + String(humidity) +
-                   ",\"timestamp\":\"" + timestamp + "\"}";
-
-  Serial.print("Sending JSON: ");
-  Serial.println(payload);
-
-  int code = http.POST(payload);
-  Serial.print("Response code: ");
+  String tempPayload = "{\"param_id\":1,\"value\":" + String(temperature) +
+                       ",\"device_timestamp\":\"" + timestamp + "\"}";
+  Serial.print("Sending temp: ");
+  Serial.println(tempPayload);
+  int code = http.POST(tempPayload);
+  Serial.print("Temp response: ");
   Serial.println(code);
+  http.end();
 
+  // Send humidity (param_id = 2)
+  http.begin(SERVICE_URL);
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("X-Device-ID", DEVICE_ID);
+
+  String humidPayload = "{\"param_id\":2,\"value\":" + String(humidity) +
+                        ",\"device_timestamp\":\"" + timestamp + "\"}";
+  Serial.print("Sending humidity: ");
+  Serial.println(humidPayload);
+  code = http.POST(humidPayload);
+  Serial.print("Humidity response: ");
+  Serial.println(code);
   http.end();
 }
 

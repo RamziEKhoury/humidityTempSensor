@@ -1,8 +1,19 @@
 <div class="device-detail">
     <a href="#" class="back-link" hx-get="/devices" hx-target="#devices-container" hx-swap="innerHTML">&larr; Back to devices</a>
 
-    <h2>{{.Device.ID}}</h2>
-    <p class="device-location">{{.Device.Location}}</p>
+    <div class="device-header">
+        <div>
+            <h2>{{.Device.ID}}</h2>
+            <p class="device-location">{{.Device.Location}}</p>
+        </div>
+        <button class="delete-btn"
+                hx-delete="/device/{{.Device.ID}}"
+                hx-target="#devices-container"
+                hx-swap="innerHTML"
+                hx-confirm="Are you sure you want to delete this device and all its readings?">
+            Delete Device
+        </button>
+    </div>
     <div class="last-seen">
         Status: {{if .Device.IsOnline}}<strong>Online</strong>{{else}}<strong>Offline</strong>{{end}}
         &mdash; Last seen: {{.Device.LastSeenFormatted}}

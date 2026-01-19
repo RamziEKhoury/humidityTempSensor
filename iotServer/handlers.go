@@ -13,13 +13,13 @@ import (
 
 // Data structures for dashboard
 type DeviceStatus struct {
-	ID              string
-	Location        string
-	LastSeen        time.Time
+	ID                string
+	Location          string
+	LastSeen          time.Time
 	LastSeenFormatted string
-	IsOnline        bool
-	LastTemp        float64
-	LastHumid       float64
+	IsOnline          bool
+	LastTemp          float64
+	LastHumid         float64
 }
 
 type ChartData struct {
@@ -82,6 +82,11 @@ func HandleDevices(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleDevice(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodDelete {
+		HandleDeleteDevice(w, r)
+		return
+	}
+
 	deviceID := strings.TrimPrefix(r.URL.Path, "/device/")
 	if deviceID == "" {
 		http.Error(w, "device id required", http.StatusBadRequest)
@@ -186,6 +191,48 @@ func renderAddDeviceError(w http.ResponseWriter, errorMsg string) {
 		"Error": errorMsg,
 	}
 	templates.ExecuteTemplate(w, "add_device.html", data)
+}
+
+func HandleDeleteDevice(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	deviceID := strings.TrimPrefix(r.URL.Path, "/device/")
+	if deviceID == "" {
+		http.Error(w, "device id required", http.StatusBadRequest)
+		return
+	}
+
+	// Delete readings first (foreign key constraint)
+	_, err := conn.Exec("DELETE FROM readings WHERE device_id = ?", deviceID)
+	if err != nil {
+		http.Error(w, "failed to delete readings", http.StatusInternalServerError)
+		return
+	}
+
+	// Delete device
+	_, err = conn.Exec("DELETE FROM devices WHERE id = ?", deviceID)
+	if err != nil {
+		http.Error(w, "failed to delete device", http.StatusInternalServerError)
+		return
+	}
+
+	// Return updated device list
+	devices, err := getDevicesWithStatus()
+	if err != nil {
+		http.Error(w, "database error", http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]interface{}{
+		"Devices": devices,
+	}
+
+	if err := templates.ExecuteTemplate(w, "devices.html", data); err != nil {
+		http.Error(w, "template error", http.StatusInternalServerError)
+	}
 }
 
 func getDevicesWithStatus() ([]DeviceStatus, error) {
